@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>주문 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <h1 class="logo">📦 주문 대시보드</h1>
+      <div class="header-actions">
+        <span class="updated-at" id="updatedAt"></span>
+        <button class="btn btn-outline" id="refreshBtn">새로고침</button>
+        <button class="btn btn-ghost" id="settingsBtn">⚙️ 설정</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 설정 모달 -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>API 설정</h2>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-section">
+          <h3><span class="badge badge-naver">N</span> 스마트스토어</h3>
+          <label>Client ID
+            <input type="text" id="naverClientId" placeholder="네이버 커머스 API Client ID" />
+          </label>
+          <label>Client Secret
+            <input type="password" id="naverClientSecret" placeholder="네이버 커머스 API Client Secret" />
+          </label>
+        </div>
+        <div class="settings-section">
+          <h3><span class="badge badge-coupang">C</span> 쿠팡 파트너스</h3>
+          <label>Access Key
+            <input type="text" id="coupangAccessKey" placeholder="쿠팡 파트너스 Access Key" />
+          </label>
+          <label>Secret Key
+            <input type="password" id="coupangSecretKey" placeholder="쿠팡 파트너스 Secret Key" />
+          </label>
+          <label>Vendor ID
+            <input type="text" id="coupangVendorId" placeholder="Vendor ID (예: A00012345)" />
+          </label>
+        </div>
+        <p class="settings-note">⚠️ API 키는 브라우저 로컬스토리지에만 저장되며 외부로 전송되지 않습니다.<br>
+        스마트스토어·쿠팡 API는 CORS 제한으로 프록시 서버가 필요할 수 있습니다.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="saveSettings">저장</button>
+        <button class="btn btn-ghost" id="useDemoData">데모 데이터로 보기</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+    <!-- 오늘의 매출 요약 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">오늘의 매출</h2>
+        <div class="date-badge" id="todayDate"></div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card highlight">
+          <div class="summary-label">전체 주문</div>
+          <div class="summary-value" id="totalOrders">—</div>
+          <div class="summary-unit">건</div>
+        </div>
+        <div class="summary-card highlight">
+          <div class="summary-label">전체 매출</div>
+          <div class="summary-value" id="totalRevenue">—</div>
+          <div class="summary-unit">원</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">신규 주문</div>
+          <div class="summary-value red" id="newOrders">—</div>
+          <div class="summary-unit">건</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">발송 대기</div>
+          <div class="summary-value red" id="pendingShip">—</div>
+          <div class="summary-unit">건</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">취소 요청</div>
+          <div class="summary-value" id="cancelReq">—</div>
+          <div class="summary-unit">건</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">반품 요청</div>
+          <div class="summary-value" id="returnReq">—</div>
+          <div class="summary-unit">건</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 채널별 현황 -->
+    <section class="section">
+      <h2 class="section-title">채널별 현황</h2>
+      <div class="channel-grid">
+        <div class="channel-card">
+          <div class="channel-header">
+            <span class="badge badge-naver">N</span>
+            <span class="channel-name">스마트스토어</span>
+            <span class="channel-status" id="naverStatus">연결 안됨</span>
+          </div>
+          <div class="channel-stats">
+            <div class="stat"><span class="stat-label">신규</span><span class="stat-val red" id="naverNew">—</span></div>
+            <div class="stat"><span class="stat-label">확인</span><span class="stat-val red" id="naverConfirm">—</span></div>
+            <div class="stat"><span class="stat-label">발송</span><span class="stat-val" id="naverShip">—</span></div>
+            <div class="stat"><span class="stat-label">취소</span><span class="stat-val" id="naverCancel">—</span></div>
+            <div class="stat"><span class="stat-label">반품</span><span class="stat-val" id="naverReturn">—</span></div>
+          </div>
+          <div class="channel-revenue">
+            <span>오늘 매출</span>
+            <span class="channel-revenue-val" id="naverRevenue">—</span>
+          </div>
+        </div>
+
+        <div class="channel-card">
+          <div class="channel-header">
+            <span class="badge badge-coupang">C</span>
+            <span class="channel-name">쿠팡</span>
+            <span class="channel-status" id="coupangStatus">연결 안됨</span>
+          </div>
+          <div class="channel-stats">
+            <div class="stat"><span class="stat-label">신규</span><span class="stat-val red" id="coupangNew">—</span></div>
+            <div class="stat"><span class="stat-label">확인</span><span class="stat-val red" id="coupangConfirm">—</span></div>
+            <div class="stat"><span class="stat-label">발송</span><span class="stat-val" id="coupangShip">—</span></div>
+            <div class="stat"><span class="stat-label">취소</span><span class="stat-val" id="coupangCancel">—</span></div>
+            <div class="stat"><span class="stat-label">반품</span><span class="stat-val" id="coupangReturn">—</span></div>
+          </div>
+          <div class="channel-revenue">
+            <span>오늘 매출</span>
+            <span class="channel-revenue-val" id="coupangRevenue">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 일별 매출 그래프 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">일별 매출 추이 <span class="section-sub">(최근 30일)</span></h2>
+        <div class="chart-toggle">
+          <button class="toggle-btn active" data-metric="revenue">매출</button>
+          <button class="toggle-btn" data-metric="orders">주문수</button>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="salesChart"></canvas>
+      </div>
+    </section>
+
+    <!-- 주문 목록 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">최근 주문</h2>
+        <div class="filter-group">
+          <select id="channelFilter">
+            <option value="all">전체 채널</option>
+            <option value="naver">스마트스토어</option>
+            <option value="coupang">쿠팡</option>
+          </select>
+          <select id="statusFilter">
+            <option value="all">전체 상태</option>
+            <option value="new">신규주문</option>
+            <option value="pending">발송대기</option>
+            <option value="shipped">발송완료</option>
+            <option value="cancel">취소</option>
+            <option value="return">반품</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="orders-table">
+          <thead>
+            <tr>
+              <th>채널</th>
+              <th>주문번호</th>
+              <th>상품명</th>
+              <th>수량</th>
+              <th>금액</th>
+              <th>상태</th>
+              <th>주문일시</th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody">
+            <tr><td colspan="7" class="empty-row">데이터를 불러오는 중...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
