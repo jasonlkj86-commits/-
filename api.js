@@ -35,13 +35,7 @@ async function naverGetToken(clientId, clientSecret) {
   if (naverToken && Date.now() < naverTokenExpiry) return naverToken;
 
   const timestamp = Date.now().toString();
-  const raw = `${clientId}_${timestamp}:${clientSecret}`;
-  const password = btoa(unescape(encodeURIComponent(raw)));
-
-  const body = new URLSearchParams();
-  body.append('grant_type', 'client_credentials');
-  body.append('type', 'SELF');
-  body.append('account_id', clientId);
+  const password = btoa(`${clientId}_${timestamp}:${clientSecret}`);
 
   const res = await fetch(proxyUrl(NAVER_AUTH_URL), {
     method: 'POST',
@@ -49,10 +43,10 @@ async function naverGetToken(clientId, clientSecret) {
       'Content-Type': 'application/x-www-form-urlencoded',
       Authorization: `Basic ${password}`,
     },
-    body: body.toString(),
+    body: 'grant_type=client_credentials&type=SELF',
   });
   if (!res.ok) {
-    const errText = await res.text();
+    const errText = await res.text().catch(() => '');
     throw new Error(`네이버 토큰 오류: ${res.status} - ${errText}`);
   }
   const data = await res.json();
