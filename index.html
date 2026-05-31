@@ -14,49 +14,10 @@
       <div class="header-actions">
         <span class="updated-at" id="updatedAt"></span>
         <button class="btn btn-outline" id="refreshBtn">새로고침</button>
-        <button class="btn btn-ghost" id="settingsBtn">⚙️ 설정</button>
+        <button class="btn btn-ghost" id="settingsBtn">⚙️ 데모 보기</button>
       </div>
     </div>
   </header>
-
-  <!-- 설정 모달 -->
-  <div class="modal-overlay" id="settingsModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>API 설정</h2>
-        <button class="modal-close" id="modalClose">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="settings-section">
-          <h3><span class="badge badge-naver">N</span> 스마트스토어</h3>
-          <label>Client ID
-            <input type="text" id="naverClientId" placeholder="네이버 커머스 API Client ID" />
-          </label>
-          <label>Client Secret
-            <input type="password" id="naverClientSecret" placeholder="네이버 커머스 API Client Secret" />
-          </label>
-        </div>
-        <div class="settings-section">
-          <h3><span class="badge badge-coupang">C</span> 쿠팡 파트너스</h3>
-          <label>Access Key
-            <input type="text" id="coupangAccessKey" placeholder="쿠팡 파트너스 Access Key" />
-          </label>
-          <label>Secret Key
-            <input type="password" id="coupangSecretKey" placeholder="쿠팡 파트너스 Secret Key" />
-          </label>
-          <label>Vendor ID
-            <input type="text" id="coupangVendorId" placeholder="Vendor ID (예: A00012345)" />
-          </label>
-        </div>
-        <p class="settings-note">⚠️ API 키는 브라우저 로컬스토리지에만 저장되며 외부로 전송되지 않습니다.<br>
-        스마트스토어·쿠팡 API는 CORS 제한으로 프록시 서버가 필요할 수 있습니다.</p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" id="saveSettings">저장</button>
-        <button class="btn btn-ghost" id="useDemoData">데모 데이터로 보기</button>
-      </div>
-    </div>
-  </div>
 
   <main class="main">
     <!-- 오늘의 매출 요약 -->
@@ -107,7 +68,7 @@
           <div class="channel-header">
             <span class="badge badge-naver">N</span>
             <span class="channel-name">스마트스토어</span>
-            <span class="channel-status" id="naverStatus">연결 안됨</span>
+            <span class="channel-status" id="naverStatus">로딩 중</span>
           </div>
           <div class="channel-stats">
             <div class="stat"><span class="stat-label">신규</span><span class="stat-val red" id="naverNew">—</span></div>
@@ -126,7 +87,7 @@
           <div class="channel-header">
             <span class="badge badge-coupang">C</span>
             <span class="channel-name">쿠팡</span>
-            <span class="channel-status" id="coupangStatus">연결 안됨</span>
+            <span class="channel-status" id="coupangStatus">로딩 중</span>
           </div>
           <div class="channel-stats">
             <div class="stat"><span class="stat-label">신규</span><span class="stat-val red" id="coupangNew">—</span></div>
