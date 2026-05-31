@@ -245,6 +245,9 @@ async function fetchAll(cfg) {
   const naverData = results[0].status === 'fulfilled' ? results[0].value : null;
   const coupangData = results[1].status === 'fulfilled' ? results[1].value : null;
 
+  if (results[0].status === 'rejected') console.error('네이버 오류 상세:', results[0].reason);
+  if (results[1].status === 'rejected') console.error('쿠팡 오류 상세:', results[1].reason);
+
   if (!naverData && !coupangData) throw new Error('API 연결 실패');
   return { naverData, coupangData };
 }
