@@ -35,15 +35,28 @@ async function naverGetToken(clientId, clientSecret) {
   if (naverToken && Date.now() < naverTokenExpiry) return naverToken;
 
   const timestamp = Date.now().toString();
-  const password = btoa(`${clientId}_${timestamp}:${clientSecret}`);
+
+  // HMAC-SHA256으로 client_secret_sign 생성
+  const message = `${clientId}_${timestamp}`;
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(clientSecret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  const clientSecretSign = btoa(String.fromCharCode(...new Uint8Array(sig)));
+
+  const body = new URLSearchParams({
+    client_id: clientId,
+    timestamp,
+    client_secret_sign: clientSecretSign,
+    grant_type: 'client_credentials',
+    type: 'SELF',
+  });
 
   const res = await fetch(proxyUrl(NAVER_AUTH_URL), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${password}`,
-    },
-    body: 'grant_type=client_credentials&type=SELF',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
   });
   if (!res.ok) {
     const errText = await res.text().catch(() => '');
