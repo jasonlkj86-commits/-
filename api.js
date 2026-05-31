@@ -8,7 +8,7 @@
  *   예: "https://my-proxy.example.com/proxy?url="
  */
 
-const PROXY_BASE = ''; // 필요 시 프록시 URL 입력
+const PROXY_BASE = 'https://order-proxy.jasonlkj86.workers.dev/?url=';
 
 // ── 날짜 헬퍼 ──────────────────────────────────────────────────────────────
 
